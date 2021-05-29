@@ -33,6 +33,28 @@ All endpoints are relative to https://siegeggapi.herokuapp.com.
   }
   ```
 
+### `/rankings/<region>`
+
+- Method: `GET`
+- Cached Time: 300 seconds (5 Minutes)
+- Regions: `global`, `na`, `eu`, `latam`, `apac`
+- Response:
+  ```python
+  {
+      "data": {
+          "status": 200,
+          'segments': [
+              {
+                  'rank': str,
+                  'org': str,
+                  'rating': str,
+                  'org_logo': str
+              }
+          ],
+      }
+  }
+  ```
+
 ## Installation
 
 ### Source

@@ -28,6 +28,16 @@ def sge_news():
     )
 
 
+@limits(calls=50, period=TEN_MINUTES)
+@cache.cached(timeout=300)
+@app.route("/rankings/<region>", methods=["GET"])
+def sge_rankings_na(region):
+    return current_app.response_class(
+        json.dumps(siege.sge_rankings(region), indent=4, escape_forward_slashes=False),
+        mimetype="application/json",
+    )
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     """Return a custom 404 error."""
