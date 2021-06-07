@@ -1,54 +1,32 @@
-from flask import Flask, current_app, render_template
-from flask_cors import CORS
-from flask_caching import Cache
-import ujson as json
-from ratelimit import limits
+from fastapi import FastAPI
+import uvicorn
 from api.scrape import SGE
+from ratelimit import limits
 
-app = Flask(__name__, template_folder="frontpage")
-cache = Cache(app, config={"CACHE_TYPE": "simple"})
-CORS(app)
+
+app = FastAPI(
+    title="siegeggapi",
+    description="An Unofficial REST API for [siege.gg](https://www.siege.gg/), a site for Rainbow 6 Siege Esports match and news coverage",
+    version="1.0.3",
+    docs_url="/",
+    redoc_url=None,
+)
 siege = SGE()
 
 TEN_MINUTES = 600
 
 
-@app.route("/")
-def home():
-    return render_template("index.html")
-
-
 @limits(calls=50, period=TEN_MINUTES)
-@cache.cached(timeout=300)
-@app.route("/news", methods=["GET"])
+@app.get("/news")
 def sge_news():
-    return current_app.response_class(
-        json.dumps(siege.sge_recent(), indent=4, escape_forward_slashes=False),
-        mimetype="application/json",
-    )
+    return siege.sge_recent()
 
 
 @limits(calls=50, period=TEN_MINUTES)
-@cache.cached(timeout=300)
-@app.route("/rankings/<region>", methods=["GET"])
-def sge_rankings_na(region):
-    return current_app.response_class(
-        json.dumps(siege.sge_rankings(region), indent=4, escape_forward_slashes=False),
-        mimetype="application/json",
-    )
-
-
-@app.errorhandler(404)
-def page_not_found(e):
-    """Return a custom 404 error."""
-    return "Sorry, Nothing at this URL.", 404
-
-
-@app.errorhandler(500)
-def application_error(e):
-    """Return a custom 500 error."""
-    return "Sorry, unexpected error: {}".format(e), 500
+@app.get("/rankings/{region}")
+def sge_rankings(region):
+    return siege.sge_rankings(region)
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3001)
+    uvicorn.run("main:app", host="0.0.0.0", port=3001)

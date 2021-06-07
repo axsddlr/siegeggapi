@@ -1,8 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 import utils.resources as res
-
-# from utils.HTMLReceive import r
 import asyncio
 
 
@@ -147,13 +145,13 @@ class SGE:
 
         rankings_module = base.find_all(
             "li",
-            {"class": "ranking__item small overflow-hidden"},
+            {"class": "ranking__item overflow-hidden"},
         )
         rankings = []
         for rmodule in rankings_module:
             # title of each article
             org = rmodule.find(
-                "h3", {"class": "ranking-item__team h3 px-1 px-md-2 mb-0"}
+                "h3", {"class": "ranking-item__team fs-inherit px-1 px-md-2 mb-0"}
             ).text.strip()
 
             # rank # of each team
@@ -168,12 +166,18 @@ class SGE:
 
             rating = rmodule.find("span").text.strip()
 
+            team = rmodule.find("div", {"class": "card-body pt-0 text-center"}).find(
+                "a"
+            )["href"]
+            team = "https://siege.gg" + team
+
             rankings.append(
                 {
                     "rank": rank,
                     "org": org,
                     "rating": rating,
                     "org_logo": thumbnail,
+                    "team_page": team,
                 }
             )
 
