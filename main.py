@@ -1,3 +1,4 @@
+from threading import Thread
 from fastapi import FastAPI
 import uvicorn
 from api.scrape import SGE
@@ -28,5 +29,14 @@ def sge_rankings(region):
     return siege.sge_rankings(region)
 
 
-if __name__ == "__main__":
+def run():
     uvicorn.run("main:app", host="0.0.0.0", port=3001)
+
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+
+
+if __name__ == "__main__":
+    keep_alive()
