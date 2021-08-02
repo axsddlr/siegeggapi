@@ -2,11 +2,72 @@ import requests
 from bs4 import BeautifulSoup
 import utils.resources as res
 import asyncio
+import json
+
+
+class R6:
+    def r6(self, cat):
+        headers = {
+            "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0",
+            "authorization": "3u0FfSBUaTSew-2NVfAOSYWevVQHWtY9q3VM8Xx9Lto",
+        }
+
+        querystring = {
+            "categoriesFilter": f"{cat}",
+            "limit": "10",
+            "mediaFilter": "all",
+            "tags": "BR-rainbow-six GA-siege",
+            "locale": "en-us",
+        }
+        URL = "https://nimbus.ubisoft.com/api/v1/items"
+        response = requests.get(URL, headers=headers, params=querystring)
+        status = response.status_code
+
+        responseJSON = response.json()
+
+        base = responseJSON["items"]
+
+        result = []
+        for each in base:
+            # title of the article
+            title = each["title"]
+
+            # description of the article
+            try:
+                description = each["abstract"]
+            except:
+                description = "No description available"
+
+            # date of the article
+            date = each["date"]
+
+            # thumbnail of the article
+            try:
+                thumbnail = each["thumbnail"]["url"]
+            except:
+                thumbnail = "No thumbnail available"
+
+            url = each["button"]["buttonUrl"]
+            url = f"https://www.ubisoft.com/en-us/game/rainbow-six/siege/news-updates{url}"
+
+            result.append(
+                {
+                    "title": title,
+                    "description": description,
+                    "url": url,
+                    "date": date,
+                    "thumbnail": thumbnail,
+                }
+            )
+        data = {"status": status, "data": result}
+
+        if status != 200:
+            raise Exception("API response: {}".format(status))
+        return data
 
 
 class SGE:
-    @staticmethod
-    def sge_recent():
+    def sge_recent(self):
         headers = {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET",
@@ -124,9 +185,7 @@ class SGE:
             raise Exception("API response: {}".format(status))
         return data
 
-    @staticmethod
-    def sge_rankings(region: str = ""):
-        region = region
+    def sge_rankings(self, region):
         headers = {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET",
